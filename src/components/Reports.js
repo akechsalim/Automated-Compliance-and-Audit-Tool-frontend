@@ -16,7 +16,7 @@ function Reports() {
     const [error, setError] = useState("");
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const [isPolling, setIsPolling] = useState(true);
+    const [isPolling, setIsPolling] = useState(true); // Polling enabled by default
     const navigate = useNavigate();
 
     const fetchReport = async () => {
@@ -30,7 +30,7 @@ function Reports() {
                 params,
             });
             setReport(response.data);
-            setError("");
+            setError(""); // Clear any previous errors
         } catch (err) {
             setError("Failed to fetch report: " + (err.response?.status === 401 ? "Unauthorized" : err.message));
             if (err.response?.status === 401) navigate("/login");
@@ -38,15 +38,17 @@ function Reports() {
     };
 
     useEffect(() => {
-        fetchReport();
+        fetchReport(); // Initial fetch
         let intervalId;
+
         if (isPolling) {
-            intervalId = setInterval(fetchReport, 30000);
+            intervalId = setInterval(fetchReport, 30000); // Poll every 30 seconds
         }
+
         return () => {
-            if (intervalId) clearInterval(intervalId);
+            if (intervalId) clearInterval(intervalId); // Cleanup on unmount or polling toggle
         };
-    }, [navigate, isPolling, startDate, endDate]);
+    }, [navigate, isPolling, startDate, endDate]); // Re-run if polling or filters change
 
     const handleFilter = () => {
         fetchReport();
@@ -54,31 +56,6 @@ function Reports() {
 
     const togglePolling = () => {
         setIsPolling((prev) => !prev);
-    };
-
-    const exportReport = async (format) => {
-        const token = getAccessToken();
-        const params = {};
-        if (startDate) params.startDate = startDate.toISOString();
-        if (endDate) params.endDate = endDate.toISOString();
-
-        try {
-            const response = await axios.get(`http://localhost:8080/api/reports/export/${format}`, {
-                headers: { Authorization: token },
-                params,
-                responseType: "blob", // Important for file downloads
-            });
-
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `compliance-report.${format}`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode.removeChild(link);
-        } catch (err) {
-            setError("Failed to export report: " + err.message);
-        }
     };
 
     if (!report) return <div className="loading">Loading...</div>;
@@ -157,10 +134,6 @@ function Reports() {
                     <p>Total Rules: {report.totalRules}</p>
                     <p>Total Checks: {report.totalChecks}</p>
                     <p>Last Updated: {new Date(report.lastUpdated).toLocaleString()}</p>
-                    <div className="export-buttons">
-                        <button onClick={() => exportReport("csv")} className="export-btn csv-btn">Export CSV</button>
-                        <button onClick={() => exportReport("pdf")} className="export-btn pdf-btn">Export PDF</button>
-                    </div>
                 </div>
                 <div className="charts-section">
                     <div className="chart-container">

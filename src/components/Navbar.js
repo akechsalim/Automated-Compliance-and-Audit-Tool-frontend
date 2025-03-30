@@ -18,7 +18,8 @@ function Navbar() {
             </div>
             <div className="navbar-links">
                 <Link to="/rules" className="navbar-link">Rules</Link>
-                {/* Add more check-related pages later if needed */}
+                <Link to="/reports" className="navbar-link">Reports</Link>
+                <Link to="/audit-logs" className="navbar-link">Audit Logs</Link> {/* New */}
                 <button onClick={handleLogout} className="navbar-btn logout-btn">Logout</button>
             </div>
         </nav>
